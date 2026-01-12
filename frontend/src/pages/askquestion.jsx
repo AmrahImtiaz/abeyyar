@@ -201,7 +201,7 @@ export default function AskQuestionPage() {
                     </div>
 
                     <Button 
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
+                      className="w-full bg-blue-900 hover:bg-blue-500 text-white rounded-sm" 
                       disabled={!title || !content} 
                       onClick={handleSubmit}
                     >
@@ -212,10 +212,10 @@ export default function AskQuestionPage() {
               </div>
 
               {/* Tips Card */}
-              <Card className="shadow-lg border border-gray-200 bg-gray-50">
+              <Card className="shadow-lg border border-gray-200 bg-gray-50 font-family: 'Unbounded'">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                    <HelpCircle className="w-5 h-5 text-blue-600" /> Tips for Asking
+                    <HelpCircle className="w-5 h-5 text-blue-600 " /> Tips for Asking
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">

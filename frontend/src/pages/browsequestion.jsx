@@ -80,13 +80,13 @@ const sortedQuestions = [...filteredQuestions].sort((a, b) => {
   return (
     <>
     <Navbar />
-    <div className="min-h-screen bg-white py-8">
+    <div className="min-h-screen bg-blue-100 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">Browse Questions</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 text-black ">Browse Questions</h1>
               <p className="text-gray-500">Explore questions from our learning community</p>
             </div>
             <Link to="/askquestion">
@@ -99,17 +99,17 @@ const sortedQuestions = [...filteredQuestions].sort((a, b) => {
           {/* Search & Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 border-black" />
               <Input
                 placeholder="Search questions, tags, or content..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-2 border-black bg-blue-100"
               />
             </div>
 
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full md:w-48">
+              <SelectTrigger className="w-full md:w-48 border-2 border-black">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -122,10 +122,10 @@ const sortedQuestions = [...filteredQuestions].sort((a, b) => {
             </Select>
 
             <Select value={filterBy} onValueChange={setFilterBy}>
-              <SelectTrigger className="w-full md:w-48">
+              <SelectTrigger className="w-full md:w-48 border-black">
                 <SelectValue placeholder="Filter by subject" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-black">
                 <SelectItem value="all">All Subjects</SelectItem>
                 <SelectItem value="mathematics">Mathematics</SelectItem>
                 <SelectItem value="computer science">Computer Science</SelectItem>

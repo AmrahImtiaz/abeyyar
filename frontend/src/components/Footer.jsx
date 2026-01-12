@@ -69,6 +69,12 @@ function Footer() {
 
         .footer li {
           line-height: 2em;
+          font-size: 19px;
+        }
+
+        
+        .footer li:hover {
+          color: #044a9b;
         }
 
         .footer a {
@@ -123,7 +129,7 @@ function Footer() {
         <ul className="footer__nav">
           <li className="nav__item">
             <ul className="nav__ul">
-              <li>
+              <li >
                 <a href="/askquestion">Ask Questions</a>
               </li>
 

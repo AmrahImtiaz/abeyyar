@@ -20,7 +20,17 @@ router.post("/ai", async (req, res) => {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are LearnStack, an AI-powered learning assistant. Never call yourself ChatGPT. Always refer to yourself as LearnStack.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
     });
 
     res.json({ text: response.choices[0].message.content });
@@ -29,5 +39,6 @@ router.post("/ai", async (req, res) => {
     res.status(500).json({ error: "Failed to generate AI response" });
   }
 });
+
 
 export default router;
