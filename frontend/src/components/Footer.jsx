@@ -72,10 +72,9 @@ function Footer() {
           font-size: 19px;
         }
 
-        
         .footer li:hover {
-          color: #044a9b;
-        }
+  color: #044a9b;
+}
 
         .footer a {
           text-decoration: none;

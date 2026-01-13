@@ -19,6 +19,7 @@
     "express": "^5.2.1",
     "handlebars": "^4.7.8",
     "jsonwebtoken": "^9.0.2",
+    "mammoth": "^1.11.0",
     "mongoose": "^8.21.0",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.5",
@@ -26,6 +27,8 @@
     "openai": "^6.15.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pdf-parse": "^2.4.5",
+    "pptx2json": "^0.0.10",
     "yup": "^1.7.0"
   },
   "keywords": []

@@ -33,6 +33,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function ChatPage() {
+
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const [messages, setMessages] = useState([
     {
       id: "1",
@@ -88,10 +91,64 @@ export default function ChatPage() {
     return responses[Math.floor(Math.random() * responses.length)]
   }
 
-const handleSendMessage = async () => {
+  const handleSendMessage = async () => {
+  // ----------------------------
+  // CASE 1: FILE UPLOADED
+  // ----------------------------
+  if (selectedFile) {
+    const fileMessage = {
+      id: Date.now().toString(),
+      content: `📄 Uploaded: ${selectedFile.name}`,
+      sender: "user",
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, fileMessage]);
+    setIsTyping(true);
+
+    try {
+      const formData = new FormData();
+formData.append("file", selectedFile);
+
+const res = await fetch("http://localhost:8000/api/chat/upload", {
+  method: "POST",
+  body: formData,
+});
+
+      const data = await res.json();
+
+      const aiMessage = {
+        id: (Date.now() + 1).toString(),
+        content: data.text,
+        sender: "ai",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          content: "❌ Failed to process the document.",
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ]);
+    }
+
+    setSelectedFile(null);
+    setIsTyping(false);
+    return;
+  }
+
+  // ----------------------------
+  // CASE 2: TEXT MESSAGE
+  // ----------------------------
   if (!inputValue.trim()) return;
 
-  // Add user's message to chat
   const userMessage = {
     id: Date.now().toString(),
     content: inputValue,
@@ -104,7 +161,6 @@ const handleSendMessage = async () => {
   setIsTyping(true);
 
   try {
-    // Call backend API
     const res = await fetch("http://localhost:8000/api/chat/ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -121,20 +177,22 @@ const handleSendMessage = async () => {
     };
 
     setMessages((prev) => [...prev, aiMessage]);
+
   } catch (err) {
     console.error(err);
-    const aiMessage = {
-      id: (Date.now() + 1).toString(),
-      content: "Sorry, I couldn't generate a response.",
-      sender: "ai",
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, aiMessage]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: (Date.now() + 1).toString(),
+        content: "❌ Sorry, I couldn't generate a response.",
+        sender: "ai",
+        timestamp: new Date(),
+      },
+    ]);
   } finally {
     setIsTyping(false);
   }
 };
-
 
   const handleNewChat = () => {
     setMessages([
@@ -185,7 +243,7 @@ const handleSendMessage = async () => {
           {/* Sidebar */}
           <div className="w-80 border-r bg-muted/30">
             <div className="p-4">
-              <Button onClick={handleNewChat} className="w-full mb-4">
+              <Button onClick={handleNewChat} className="w-full mb-4 rounded-sm border-black shadow-2xl">
                 <Plus className="w-4 h-4 mr-2" />
                 New Chat
               </Button>
@@ -272,20 +330,34 @@ const handleSendMessage = async () => {
               <div ref={messagesEndRef} />
             </ScrollArea>
 
-            {/* Input */}
-            <div className="border-t p-4 flex gap-2">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Ask me anything..."
-                onKeyDown={(e) =>
-                  e.key === "Enter" && handleSendMessage()
-                }
-              />
-              <Button onClick={handleSendMessage} disabled={isTyping}>
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
+<div className="border-t p-4 flex gap-2 items-center">
+
+  {/* FILE UPLOAD */}
+  <label className="cursor-pointer">
+    <Upload className="w-6 h-6 text-gray-600 hover:text-black" />
+  <input
+  type="file"
+  className="hidden"
+  onChange={(e) => setSelectedFile(e.target.files[0])}
+  accept=".pdf,.docx,.pptx"
+/>
+
+  </label>
+
+  <Input
+    value={inputValue}
+    onChange={(e) => setInputValue(e.target.value)}
+    placeholder="Ask me anything..."
+    onKeyDown={(e) =>
+      e.key === "Enter" && handleSendMessage()
+    }
+  />
+
+  <Button onClick={handleSendMessage} disabled={isTyping}>
+    <Send className="w-4 h-4" />
+  </Button>
+</div>
+
           </div>
 
         </div>
