@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import ReactMarkdown from "react-markdown";
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -252,7 +253,7 @@ const res = await fetch("http://localhost:8000/api/chat/upload", {
                 <Button
                   variant="outline"
                   onClick={handleDocumentSummarize}
-                  className="w-full justify-start"
+                  className="w-full justify-start rounded-sm"
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   Document Summarize
@@ -313,7 +314,17 @@ const res = await fetch("http://localhost:8000/api/chat/upload", {
                         : "bg-muted"
                     }`}
                   >
-                    <p>{msg.content}</p>
+                    
+                    <div
+  className={`rounded-lg p-3 max-w-[70%] ${
+    msg.sender === "user" ? "bg-primary text-white" : "bg-muted"
+  }`}
+>
+  <div className="prose prose-sm max-w-none whitespace-pre-wrap">
+    <ReactMarkdown>{msg.content}</ReactMarkdown>
+  </div>
+</div>
+
                     <p className="text-xs opacity-60 mt-1">
                       {msg.timestamp.toLocaleTimeString()}
                     </p>
@@ -354,7 +365,7 @@ const res = await fetch("http://localhost:8000/api/chat/upload", {
   />
 
   <Button onClick={handleSendMessage} disabled={isTyping}>
-    <Send className="w-4 h-4" />
+    <Send className="w-4 h-4 rounded-sm" />
   </Button>
 </div>
 

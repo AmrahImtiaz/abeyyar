@@ -1,22 +1,26 @@
 import express from "express";
-import OpenAI from "openai";
+import { createRequire } from "module";
 import multer from "multer";
 import fs from "fs";
-import * as pdf from "pdf-parse";
 import mammoth from "mammoth";
-import PPTX from "pptx2json";
+import PPTX2Json from "pptx2json";
+import OpenAI from "openai";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const router = express.Router();
+// -----------------------------
+// Initialize everything first
+// -----------------------------
+const require = createRequire(import.meta.url);
+const pdf = require("pdf-parse"); // pdf-parse in ESM
+const router = express.Router();  // ✅ router declared first
 const upload = multer({ dest: "uploads/" });
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-
-// -------------------------------------------------------
+// -----------------------------
 // NORMAL CHAT ENDPOINT
-// -------------------------------------------------------
+// -----------------------------
 router.post("/ai", async (req, res) => {
   const { prompt } = req.body;
 
@@ -43,10 +47,6 @@ router.post("/ai", async (req, res) => {
   }
 });
 
-
-// -------------------------------------------------------
-// DOCUMENT UPLOAD + PROCESSING ENDPOINT
-// -------------------------------------------------------
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const file = req.file;
@@ -54,66 +54,77 @@ router.post("/upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
 
     let extractedText = "";
+    const ext = file.originalname.split(".").pop().toLowerCase();
 
     // PDF
-    if (file.mimetype === "application/pdf") {
+    if (file.mimetype === "application/pdf" || ext === "pdf") {
       const dataBuffer = fs.readFileSync(file.path);
       const pdfData = await pdf(dataBuffer);
       extractedText = pdfData.text;
     }
-
     // DOCX
     else if (
       file.mimetype ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      ext === "docx"
     ) {
       const doc = await mammoth.extractRawText({ path: file.path });
       extractedText = doc.value;
     }
-
     // PPTX
     else if (
       file.mimetype ===
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation" ||
+      ext === "pptx"
     ) {
-      const pptData = await PPTX.toJson(file.path);
-      extractedText = pptData.slides
-        .map((slide) => slide.text || "")
-        .join("\n\n");
-    }
+      // Create parser
+      const pptx2json = new PPTX2Json();
+      const pptResult = await pptx2json.toJson(file.path); // use toJson()
 
-    // Invalid File
+      // Combine all text from slides
+      extractedText = pptResult.slides
+        ?.map((slide) =>
+          slide.texts
+            ? slide.texts.map((t) => t.text).join("\n")
+            : ""
+        )
+        .join("\n\n") ?? "";
+    }
     else {
+      fs.unlinkSync(file.path);
       return res
         .status(400)
         .json({ error: "Unsupported file format. Upload PDF, DOCX, or PPTX." });
     }
 
-    // DELETE the uploaded file
-    fs.unlinkSync(file.path);
+    fs.unlinkSync(file.path); // cleanup
 
-    // SEND the extracted text → AI
+    if (!extractedText.trim()) {
+      return res.status(400).json({ error: "Could not extract text from file" });
+    }
+
+    // Send to OpenAI
     const response = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages: [
         {
           role: "system",
           content:
-            "You are LearnStack, an AI that summarizes and explains documents. Never call yourself ChatGPT.",
+            "You are LearnStack, an AI that summarizes uploaded documents.",
         },
         {
           role: "user",
-          content: `Summarize or explain this document:\n\n${extractedText}`,
+          content: extractedText.substring(0, 8000),
         },
       ],
     });
 
     res.json({
       text: response.choices[0].message.content,
-      extractedText: extractedText, // optional: remove if not needed
     });
   } catch (err) {
     console.error("Document Error:", err);
+    if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
     res.status(500).json({ error: "Failed to process the uploaded file" });
   }
 });
